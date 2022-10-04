@@ -30,6 +30,7 @@ Example HotCRP workflow to export USENIX Security'22 artifact results to secarti
   * `accepted_match_all` : `True` (enable off-cycle submissions).
   * `paper_url_prefix`: `'https://www.usenix.org'`.
   * `paper_url_xpath_query` : `'//a[contains(lower-case(text()),lower-case("{title}"))]/@href'`.
+  * `paper_title_xpath_query` : `'//a[contains(lower-case(text()),lower-case("{title}"))]/text()'`.
   * `output_files`: `['results.yaml', 'results.csv']`.
 * Run `./results.py` to produce the desired YAML output.
 * Check and manually correct any `???` entry (likely with mismatching paper titles) in the output file.

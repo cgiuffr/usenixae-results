@@ -5,6 +5,7 @@ accepted_htmls        = [] # List of accepted-papers HTML files
 accepted_match_all    = True # for off-cycle submissions
 paper_url_prefix      = '<your_url_here>'
 paper_url_xpath_query = '<your_xpath_query_here>'
+paper_title_xpath_query = '<your_xpath_query_here>' # None to use the original artifact title
 
 output_files           = '<your_files_here>' # .csv and .yaml files supported
 
@@ -18,6 +19,7 @@ csv_delimiter         = ','
 csv_quotechar         = '"'
 csv_force_delimiter   = True
 yaml_indent           = 4
+yaml_spaced_entries   = True
 out_lf                = '\n'
 out_unknown           = '???'
 out_encoding          = 'utf-8'

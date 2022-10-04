@@ -15,10 +15,29 @@ except ImportError:
     sys.exit(1)
 
 
+def xpath_query_preprocess(query):
+    # lower-case support in xpath 1.0
+    if query is None:
+        return query
+    xpatch_ci_hack = r'translate(\1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")'
+    query = re.sub(r'lower-case\((text\(\))\)', xpatch_ci_hack, query)
+    query = re.sub(r'lower-case\(([^)]*)\)', xpatch_ci_hack, query)
+    return query
+
+
+def yaml_dump(obj, out):
+    yaml.dump(obj, out, sort_keys=False,
+              indent=params.yaml_indent, line_break=params.out_lf, width=sys.maxsize, encoding=params.out_encoding, allow_unicode=True)
+
+
 def entries_to_output(entries, out):
     if os.path.splitext(out.name)[1] == '.yaml':
-        yaml.dump(entries, out, sort_keys=False,
-                  indent=params.yaml_indent, line_break=params.out_lf, width=sys.maxsize, encoding=params.out_encoding, allow_unicode=True)
+        if not params.yaml_spaced_entries:
+            yaml_dump(entries, out)
+            return
+        for entry in entries:
+            yaml_dump([entry], out)
+            out.write(params.out_lf)
     else:
         if params.csv_force_delimiter:
             out.write(f'SEP={params.csv_delimiter}{params.out_lf}')
@@ -28,6 +47,18 @@ def entries_to_output(entries, out):
             csvout.writerow(entries[0].keys())  # header
         for row in entries:
             csvout.writerow(row.values())
+
+
+def row_to_paper_title(instance, row, htmls, title):
+    if params.paper_title_xpath_query is None:
+        return title
+    titles = []
+    for html in htmls:
+        tokens = html.xpath(params.paper_title_xpath_query.format(title=title))
+        titles.extend(tokens)
+    if len(titles) > 1:
+        return params.out_unknown
+    return titles[0].strip()
 
 
 def row_to_paper_url(instance, row, htmls, title):
@@ -54,16 +85,18 @@ def row_to_entry(instance, htmls, row):
     print(f' - Processing row: {title}')
 
     for key, col in params.output_fields.items():
-        if col >= 0:
+        if key == 'title':
+            entry[key] = row_to_paper_title(instance, row, htmls, title)
+        elif key == 'paper_url':
+            entry[key] = row_to_paper_url(instance, row, htmls, title)
+        elif key == 'appendix_url':
+            entry[key] = row_to_appendix_url(instance, row)
+        elif col >= 0:
             value = row[col].strip()
             if key == 'artifact_url' and (value == 'N/A' or value == ''):
                 continue
             entry[key] = value
             continue
-        if key == 'paper_url':
-            entry[key] = row_to_paper_url(instance, row, htmls, title)
-        elif key == 'appendix_url':
-            entry[key] = row_to_appendix_url(instance, row)
         else:
             entry[key] = params.out_unknown
     return entry
@@ -92,12 +125,11 @@ htmls = [lxml.html.parse(f'{params.input_dir}/{html}')
          for html in params.accepted_htmls]
 index = 0
 
-# lower-case support in xpath 1.0
-xpatch_ci_hack = r'translate(\1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")'
-tmp = re.sub(r'lower-case\((text\(\))\)', xpatch_ci_hack,
-             params.paper_url_xpath_query)
-tmp = re.sub(r'lower-case\(([^)]*)\)', xpatch_ci_hack, tmp)
-params.paper_url_xpath_query = tmp
+# preprocess xpath queries
+params.paper_url_xpath_query = xpath_query_preprocess(
+    params.paper_url_xpath_query)
+params.paper_title_xpath_query = xpath_query_preprocess(
+    params.paper_title_xpath_query)
 
 # grab entries for all the instances
 entries = []
