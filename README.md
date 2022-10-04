@@ -25,7 +25,7 @@ Example HotCRP workflow to export USENIX Security'22 artifact results to secarti
 * Edit `params.py` as follows:
   * `input_dir`: Enter the input directory above.
   * `input_instances`: `['sec22summerae', 'sec22fallae', 'sec22winterae']`.
-  * `appendix_url_prefix` : `https://secartifacts.github.io/usenixsec2022/appendix-files/`.
+  * `appendix_url_prefix` : `appendix-files/`.
   * `accepted_htmls` : `['summer-accepted-papers.html', 'fall-accepted-papers.html', 'winter-accepted-papers.html']`.
   * `accepted_match_all` : `True` (enable off-cycle submissions).
   * `paper_url_prefix`: `'https://www.usenix.org'`.
