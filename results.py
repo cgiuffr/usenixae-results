@@ -56,7 +56,7 @@ def row_to_paper_title(instance, row, htmls, title):
     for html in htmls:
         tokens = html.xpath(params.paper_title_xpath_query.format(title=title))
         titles.extend(tokens)
-    if len(titles) > 1:
+    if len(titles) != 1:
         return params.out_unknown
     return titles[0].strip()
 
@@ -66,7 +66,7 @@ def row_to_paper_url(instance, row, htmls, title):
     for html in htmls:
         tokens = html.xpath(params.paper_url_xpath_query.format(title=title))
         urls.extend(tokens)
-    if len(urls) > 1:
+    if len(urls) != 1:
         return params.out_unknown
     return str(f'{params.paper_url_prefix}{urls[0].strip()}')
 
