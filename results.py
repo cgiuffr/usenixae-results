@@ -25,6 +25,18 @@ def xpath_query_preprocess(query):
     return query
 
 
+def xpath_param_escape(param):
+    # escape special characters in xpath
+    if param is None:
+        return param
+    special_chars = "<>&'\""
+    replacement = " "
+    for char in special_chars:
+        if char in param:
+            param = param.replace(char, replacement)
+    return param
+
+
 def yaml_dump(obj, out):
     yaml.dump(obj, out, sort_keys=False,
               indent=params.yaml_indent, line_break=params.out_lf, width=sys.maxsize, encoding=params.out_encoding, allow_unicode=True)
@@ -54,7 +66,8 @@ def row_to_paper_title(instance, row, htmls, title):
         return title
     titles = []
     for html in htmls:
-        tokens = html.xpath(params.paper_title_xpath_query.format(title=title))
+        etitle = xpath_param_escape(title)
+        tokens = html.xpath(params.paper_title_xpath_query.format(title=etitle))
         titles.extend(tokens)
     if len(titles) != 1:
         return params.out_unknown
@@ -64,7 +77,8 @@ def row_to_paper_title(instance, row, htmls, title):
 def row_to_paper_url(instance, row, htmls, title):
     urls = []
     for html in htmls:
-        tokens = html.xpath(params.paper_url_xpath_query.format(title=title))
+        etitle = xpath_param_escape(title)
+        tokens = html.xpath(params.paper_url_xpath_query.format(title=etitle))
         urls.extend(tokens)
     if len(urls) != 1:
         return params.out_unknown
